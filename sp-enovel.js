@@ -41,7 +41,7 @@ function getDataQuery(listName, query) {
 }
 //Creating a new registry element
 function addData(listName, data) {
-    const response = null;
+    var response = null;
     $.ajax({
         url: _spPageContextInfo.webAbsoluteUrl + getUrl(listName),
         type: "POST",
@@ -62,7 +62,7 @@ function addData(listName, data) {
 }
 //Updating an item in the list
 function updateData(listName, oldItem, newItem) {
-    const response = null;
+    var response = null;
     $.ajax({
         url: _spPageContextInfo.webAbsoluteUrl + getUrl(listName),
         type: "PATCH",
@@ -85,7 +85,7 @@ function updateData(listName, oldItem, newItem) {
 }
 //Deleting record in the list
 function deleteData(listName, oldItem) {
-    const response = null;
+    var response = null;
     $.ajax({
         url: _spPageContextInfo.webAbsoluteUrl + getUrl(listName),
         type: "DELETE",
@@ -129,7 +129,7 @@ function uploadFileSP(urlProject, listName, id, fileName, file) {
             for (var b = 0; b < bytes.length; b++) {
                 binary += String.fromCharCode(bytes[b]);
             }
-            const url = getUrlUpload(listName, id, file);
+            var url = getUrlUpload(listName, id, file);
             var scriptbase = _spPageContextInfo.webServerRelativeUrl + "/_layouts/15/";
             $.getScript(scriptbase + "SP.RequestExecutor.js", function () {
                 var createitem = new SP.RequestExecutor(urlProject);
@@ -171,6 +171,38 @@ function getFileBuffer(file) {
     reader.readAsArrayBuffer(file);
     return deferred.promise();
 }
+//get query string params
+function GetQueryStringParams(sParam) {
+    var sPageURL = window.location.search.substring(1);
+    var sURLVariables = sPageURL.split('&');
+
+    for (var i = 0; i < sURLVariables.length; i++) {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam) {
+            return sParameterName[1];
+        }
+    }
+}
+//get context from list
+function getContext(listName) {
+
+    var response = null;
+    jQuery.ajax({
+        url: listName + "/_api/contextinfo",
+        type: "POST",
+        async: false,
+        headers: { "Accept": "application/json;odata=verbose" },
+
+        success: function (data) {
+            response = data.d.GetContextWebInformation.FormDigestValue;
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            console.log(textStatus);
+        }
+    });
+    return response;
+}
+
 
 /*
  *Internal methods 
@@ -184,4 +216,33 @@ function getUrlUpload(listName, id, file) {
 }
 function getUrlQuery(listName, query) {
     return "/_api/Web/Lists/GetByTitle('" + listName + "')/Items?" + query;
+}
+
+/**
+ * validate input form
+ */
+function ValidateEmail(mail) {
+    if (/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(myForm.emailAddr.value)) {
+        return (true)
+    }
+    return (false)
+}
+function getDateTime(date) {
+    now = date;
+    year = "" + now.getFullYear();
+    month = "" + (now.getMonth() + 1); if (month.length == 1) { month = "0" + month; }
+    day = "" + now.getDate(); if (day.length == 1) { day = "0" + day; }
+    hour = "" + now.getHours(); if (hour.length == 1) { hour = "0" + hour; }
+    minute = "" + now.getMinutes(); if (minute.length == 1) { minute = "0" + minute; }
+    second = "" + now.getSeconds(); if (second.length == 1) { second = "0" + second; }
+    return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
+}
+function isCheck(inputtx) {
+    if (inputtx.value.length == 0) {
+        return false;
+    }
+    return true;
+}
+function isEmpty(str) {
+    return !str.replace(/^\s+/g, '').length; // boolean (`true` if field is empty)
 }
